@@ -3,6 +3,7 @@
 import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import { Upload } from "./components/Upload";
 import { FileList } from "./components/FileList";
+import { Albums } from "./components/Albums";
 import { useState, useEffect } from "react";
 
 interface PublicFile {
@@ -51,7 +52,7 @@ function typeColor(type: string) {
 export default function Home() {
   const account = useCurrentAccount();
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<"upload" | "files">("upload");
+  const [activeTab, setActiveTab] = useState<"upload" | "files" | "albums">("upload");
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => { setMounted(true); }, []);
@@ -579,8 +580,9 @@ function PreviewModal({ file, onClose }: { file: PublicFile; onClose: () => void
 }
 
 function Dashboard({ activeTab, setActiveTab, refreshKey, onRefresh }: {
-  activeTab: "upload" | "files";
-  setActiveTab: (t: "upload" | "files") => void;
+  activeTab: "upload" | "files" | "albums";
+  setActiveTab: (t: "upload" | "files" | "albums") => void;
+  
   refreshKey: number;
   onRefresh: () => void;
 }) {
@@ -594,10 +596,11 @@ function Dashboard({ activeTab, setActiveTab, refreshKey, onRefresh }: {
         width: "fit-content", marginBottom: "2rem",
       }}>
         {[
-          { id: "upload", icon: "⬆️", label: "Upload" },
-          { id: "files", icon: "📁", label: "My Files" },
-        ].map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id as "upload" | "files")} style={{
+        { id: "upload", icon: "⬆️", label: "Upload" },
+        { id: "files", icon: "📁", label: "My Files" },
+        { id: "albums", icon: "🗂️", label: "Albums" },
+      ].map(tab => (
+          <button key={tab.id} onClick={() => setActiveTab(tab.id as "upload" | "files" | "albums")} style={{
             display: "flex", alignItems: "center", gap: "7px",
             padding: "7px 18px", borderRadius: "9px", border: "none",
             cursor: "pointer", fontSize: "13px", fontWeight: "500",
@@ -614,6 +617,7 @@ function Dashboard({ activeTab, setActiveTab, refreshKey, onRefresh }: {
       <div className="scale-in" key={activeTab}>
         {activeTab === "upload" && <Upload onSuccess={onRefresh} />}
         {activeTab === "files" && <FileList key={refreshKey} />}
+        {activeTab === "albums" && <Albums />}
       </div>
     </div>
   );

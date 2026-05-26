@@ -3,11 +3,12 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Philes — Encrypted by Default. Permanent by Design.",
+  title: "Blok — Encrypted by Default. Permanent by Design.",
   description: "Create, encrypt, and store any file permanently on Walrus. Owned by your wallet forever.",
+  keywords: "decentralized storage, Walrus, Sui, encrypted files, Web3",
 };
 
 export default function RootLayout({
@@ -16,8 +17,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className={inter.variable}>
+      <body>
         <Providers>{children}</Providers>
       </body>
     </html>

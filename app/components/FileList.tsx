@@ -12,6 +12,10 @@ interface StoredFile {
   wallet: string;
   isPublic: boolean;
   isEncrypted: boolean;
+  isLocked?: boolean;
+  isPrivate?: boolean;
+  visibility?: "public" | "private" | "locked";
+  suiDigest?: string;
 }
 
 function fmtSize(b: number) {
@@ -111,7 +115,7 @@ export function FileList() {
       const res = await fetch("https://aggregator.walrus-testnet.walrus.space/v1/blobs/" + file.blobId);
       if (!res.ok) throw new Error("Fetch failed");
       let buf = await res.arrayBuffer();
-      if (file.isEncrypted) {
+      if (file.isLocked || file.isEncrypted) {
         const { signature } = await signMessage({
           message: new TextEncoder().encode("Blok encryption key — " + account.address),
         });
@@ -415,14 +419,18 @@ export function FileList() {
                 }}>
                   {file.name}
                 </span>
-                <span style={{
+               <span style={{
                   padding: "2px 8px", borderRadius: "100px", fontSize: "10px", fontWeight: "600",
-                  background: file.isPublic ? "rgba(79,195,255,0.1)" : "rgba(124,106,255,0.1)",
-                  color: file.isPublic ? "#4fc3ff" : "#a78bfa",
-                  border: `1px solid ${file.isPublic ? "rgba(79,195,255,0.2)" : "rgba(124,106,255,0.2)"}`,
+                  background: file.isPublic
+                    ? "rgba(79,195,255,0.1)"
+                    : file.isLocked
+                    ? "rgba(79,255,176,0.1)"
+                    : "rgba(124,106,255,0.1)",
+                  color: file.isPublic ? "#4fc3ff" : file.isLocked ? "#4fffb0" : "#a78bfa",
+                  border: `1px solid ${file.isPublic ? "rgba(79,195,255,0.2)" : file.isLocked ? "rgba(79,255,176,0.2)" : "rgba(124,106,255,0.2)"}`,
                   flexShrink: 0,
                 }}>
-                  {file.isPublic ? "🌐 Public" : "🔒 Private"}
+                  {file.isPublic ? "🌐 Public" : file.isLocked ? "🔒 Locked" : "👁️ Private"}
                 </span>
               </div>
               <div style={{ fontSize: "12px", color: "#55556a", display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -430,9 +438,25 @@ export function FileList() {
                 <span>·</span>
                 <span>{fmtDate(file.storedAt)}</span>
                 <span>·</span>
-                <span style={{ fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100px" }}>
+               <span style={{ fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100px" }}>
                   {file.blobId.slice(0, 10)}...
                 </span>
+                {file.suiDigest && (
+                  <span
+                    title="View Sui transaction"
+                    onClick={e => { e.stopPropagation(); window.open("https://suiscan.xyz/testnet/tx/" + file.suiDigest, "_blank"); }}
+                    style={{
+                      padding: "2px 8px", borderRadius: "100px",
+                      background: "rgba(79,195,255,0.08)",
+                      border: "1px solid rgba(79,195,255,0.2)",
+                      color: "#4fc3ff", fontSize: "10px", fontWeight: "600",
+                      cursor: "pointer", flexShrink: 0,
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    ⛓ Sui
+                  </span>
+                )}
               </div>
             </div>
 

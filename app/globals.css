@@ -422,3 +422,17 @@ button[data-testid="connect-button"],
   transition: all 0.2s !important;
   font-family: inherit !important;
 }
+
+/* Connect wallet button override */
+[class*="wkit-button"],
+[class*="connect-button"],
+button[data-dapp-kit="connect-button"] {
+  background: linear-gradient(135deg, #7c6aff, #6355e0) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-family: inherit !important;
+  box-shadow: 0 0 20px rgba(124,106,255,0.3) !important;
+  transition: all 0.2s !important;
+}

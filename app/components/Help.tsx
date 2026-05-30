@@ -44,6 +44,21 @@ const FAQ: HelpItem[] = [
     question: "Are my files stored forever?",
     answer: "Files on Walrus are stored for a paid epoch duration. Blok handles the storage payment as part of the upload process. In the current testnet version, files are stored for the duration of the testnet epoch. In the production version, Blok's fee model funds long-term storage renewals so your files persist indefinitely.",
   },
+ {
+    icon: "🔌",
+    question: "How is Tatum integrated in Blok?",
+    answer: "Blok uses Tatum's Sui RPC Gateway (sui-testnet.gateway.tatum.io) as the infrastructure layer for all Sui blockchain interactions. Every wallet connection, transaction submission, and on-chain query routes through Tatum's high-performance node network instead of public RPC endpoints. This gives Blok 99.99% uptime guarantees, load-balanced failover across multiple nodes, and sub-50ms response times. When you upload a file and see the ⛓ Sui badge appear, that transaction was submitted and confirmed through Tatum's RPC infrastructure. Tatum is what makes Blok's on-chain anchoring reliable enough for production use.",
+  },
+  {
+    icon: "🛡️",
+    question: "What is Seal encryption and how will Blok use it?",
+    answer: "Seal is Mysten Labs' threshold encryption protocol built natively for Sui. Unlike Blok's current encryption which derives a key from your wallet signature, Seal uses a distributed key management system where no single party holds the full decryption key. This enables powerful features: you can share a locked file with another wallet without re-encrypting it, set time-based access policies, and revoke access at any time. Blok is architected to support Seal as a drop-in replacement for the current AES-256 encryption layer. When Seal's SDK reaches production stability, Blok will migrate locked file encryption to Seal — giving users stronger security guarantees and true multi-party access control. The current encryption system is designed as a compatible bridge to this migration.",
+  },
+  {
+    icon: "🔐",
+    question: "What is ZK Login and will Blok support it?",
+    answer: "ZK Login is one of Sui's most powerful features. It allows users to create a Sui wallet using their existing Google, Apple, or Facebook account — without ever seeing a seed phrase or installing a wallet extension. Under the hood, ZK Login uses zero-knowledge proofs to verify OAuth credentials and derive a Sui address, meaning the OAuth provider never learns your on-chain identity. For Blok, ZK Login means a completely new user could store their first file permanently on Walrus using just their Google account. No crypto knowledge required. No wallet setup. No seed phrase anxiety. Blok is designed to integrate ZK Login as an alternative sign-in method — sit alongside the current Sui wallet connection. This is a planned feature for the mainnet launch and represents Blok's commitment to making decentralized storage accessible to everyone, not just crypto-native users.",
+  },
   {
     icon: "💳",
     question: "How does payment work? Is Blok free?",

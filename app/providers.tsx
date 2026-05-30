@@ -6,7 +6,16 @@ import "@mysten/dapp-kit/dist/index.css";
 
 const queryClient = new QueryClient();
 
-const TATUM_API_KEY = "t-6a1a30d498b58da41d4fd506-1b89b400edb1484ba29b7596";
+async function suiRpcFetch(
+  _url: string,
+  options?: RequestInit
+): Promise<Response> {
+  return fetch("/api/rpc", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: options?.body,
+  });
+}
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -14,16 +23,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <SuiClientProvider
         networks={{
           testnet: {
-            url: `https://sui-testnet.tatum.io`,
+            url: "https://sui-testnet.gateway.tatum.io",
             network: "testnet" as const,
-            fetch: (url: string, options?: RequestInit) =>
-              fetch(url, {
-                ...options,
-                headers: {
-                  ...((options?.headers as Record<string, string>) || {}),
-                  "x-api-key": TATUM_API_KEY,
-                },
-              }),
+            fetch: suiRpcFetch,
           },
         }}
         defaultNetwork="testnet"

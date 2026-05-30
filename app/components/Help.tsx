@@ -45,6 +45,11 @@ const FAQ: HelpItem[] = [
     answer: "Files on Walrus are stored for a paid epoch duration. Blok handles the storage payment as part of the upload process. In the current testnet version, files are stored for the duration of the testnet epoch. In the production version, Blok's fee model funds long-term storage renewals so your files persist indefinitely.",
   },
   {
+    icon: "💳",
+    question: "How does payment work? Is Blok free?",
+    answer: "During the testnet phase, Blok is completely free. Storage is funded by testnet SUI which has no real-world value. When Blok launches on mainnet, Blok will operate on a subscription model — similar to Google Drive or Dropbox. Users pay a simple monthly or annual fee for a storage quota. Blok handles all the underlying Walrus storage costs, epoch renewals, and blockchain fees on your behalf. You never need to understand epoch pricing or interact with raw blockchain storage — you just pay a familiar subscription and your files are stored permanently. Plans will range from a free tier with limited storage to paid tiers for power users, DAOs, and enterprise teams. Full pricing will be published before mainnet launch.",
+  },
+  {
     icon: "📱",
     question: "What file types does Blok support?",
     answer: "Blok supports any file type — images, videos, audio, documents, PDFs, code files, archives, and any other digital file. Images and videos can be previewed directly inside the app. Audio files have a built-in player. Other file types can be downloaded. File size is limited only by the Walrus testnet upload limits.",

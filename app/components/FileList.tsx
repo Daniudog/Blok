@@ -71,7 +71,7 @@ function getVisibilityConfig(file: StoredFile) {
 }
 
 function isLocked(file: StoredFile) {
-  return file.isLocked || file.visibility === "locked" || file.isEncrypted;
+  return file.isLocked === true || file.visibility === "locked";
 }
 
 export function FileList() {
@@ -128,7 +128,7 @@ export function FileList() {
     if (!account) return;
     setDownloading(file.blobId);
     try {
-      const res = await fetch("https://aggregator.walrus-testnet.walrus.space/v1/blobs/" + file.blobId);
+      const res = await fetch("/api/upload?blobId=" + file.blobId);
       if (!res.ok) throw new Error("Fetch failed");
       let buf = await res.arrayBuffer();
       if (isLocked(file)) {
@@ -474,10 +474,10 @@ export function FileList() {
                 <button title="View on Walrus"
                   onClick={() => window.open("https://aggregator.walrus-testnet.walrus.space/v1/blobs/" + file.blobId, "_blank")}
                   style={{
-                    transition: "all 0.15s", background: "rgba(124,106,255,0.08)",
-                    border: "1px solid rgba(124,106,255,0.2)", borderRadius: "8px",
-                    padding: "7px 10px", color: "#a78bfa", cursor: "pointer", fontSize: "14px",
-                  }}>🌊</button>
+                  transition: "all 0.15s", background: "rgba(124,106,255,0.08)",
+                  border: "1px solid rgba(124,106,255,0.2)", borderRadius: "8px",
+                  padding: "7px 10px", color: "#a78bfa", cursor: "pointer", fontSize: "14px",
+                }}>🌊</button>
               </div>
             </div>
           );

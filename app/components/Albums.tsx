@@ -454,7 +454,7 @@ export function Albums() {
                         background: "none", border: "none", cursor: "pointer",
                         color: "#55556a", fontSize: "14px", padding: "4px",
                         borderRadius: "4px", transition: "color 0.15s",
-                        opacity: 0, transition: "opacity 0.15s",
+                        opacity: 0,
                       }}
                       onMouseEnter={e => (e.currentTarget.style.color = "#ff4f6a")}
                       onMouseLeave={e => (e.currentTarget.style.color = "#55556a")}

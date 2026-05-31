@@ -211,15 +211,20 @@ export function Upload({ onSuccess }: UploadProps) {
         });
         localStorage.setItem("blok_files", JSON.stringify(stored));
 
-        // Anchor on Sui
+       // Anchor on Sui
         const digest = await anchorBlob(blobId, item.file.name, item.visibility === "public");
         if (digest) {
-          const updated = JSON.parse(localStorage.getItem("blok_files") || "[]");
-          const idx = updated.findIndex((f: { blobId: string }) => f.blobId === blobId);
-          if (idx !== -1) {
-            updated[idx].suiDigest = digest;
-            localStorage.setItem("blok_files", JSON.stringify(updated));
+          const updatedFiles = JSON.parse(localStorage.getItem("blok_files") || "[]");
+          const fileIndex = updatedFiles.findIndex((f: { blobId: string }) => f.blobId === blobId);
+          if (fileIndex !== -1) {
+            updatedFiles[fileIndex].suiDigest = digest;
+          } else {
+            updatedFiles.unshift({ blobId, suiDigest: digest });
           }
+          localStorage.setItem("blok_files", JSON.stringify(updatedFiles));
+          console.log("Sui digest saved for blob:", blobId, digest);
+        } else {
+          console.warn("No digest returned for blob:", blobId);
         }
       } catch (e: unknown) {
         update(item.id, { status: "error", error: e instanceof Error ? e.message : "Failed" });

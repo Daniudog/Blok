@@ -5,6 +5,7 @@ import { Upload } from "./components/Upload";
 import { FileList } from "./components/FileList";
 import { Albums } from "./components/Albums";
 import { Help } from "./components/Help";
+import { Transfer } from "./components/Transfer";
 import { useState, useEffect } from "react";
 
 interface PublicFile {
@@ -53,7 +54,7 @@ function typeColor(type: string) {
 export default function Home() {
   const account = useCurrentAccount();
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<"upload" | "files" | "albums" | "help">("upload");
+  const [activeTab, setActiveTab] = useState<"upload" | "files" | "albums" | "transfer" | "help">("upload");
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => { setMounted(true); }, []);
@@ -581,8 +582,8 @@ function PreviewModal({ file, onClose }: { file: PublicFile; onClose: () => void
 }
 
 function Dashboard({ activeTab, setActiveTab, refreshKey, onRefresh }: {
- activeTab: "upload" | "files" | "albums" | "help";
-  setActiveTab: (t: "upload" | "files" | "albums" | "help") => void;
+ activeTab: "upload" | "files" | "albums" | "transfer" | "help";
+  setActiveTab: (t: "upload" | "files" | "albums" | "transfer" | "help") => void;
   refreshKey: number;
   onRefresh: () => void;
 }) {
@@ -599,6 +600,7 @@ function Dashboard({ activeTab, setActiveTab, refreshKey, onRefresh }: {
         { id: "upload", icon: "⬆️", label: "Upload" },
         { id: "files", icon: "📁", label: "My Files" },
         { id: "albums", icon: "🗂️", label: "Albums" },
+        { id: "transfer", icon: "📤", label: "Transfer" },
         { id: "help", icon: "❓", label: "Help" },
       ].map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id as "upload" | "files" | "albums")} style={{
@@ -619,6 +621,7 @@ function Dashboard({ activeTab, setActiveTab, refreshKey, onRefresh }: {
         {activeTab === "upload" && <Upload onSuccess={onRefresh} />}
         {activeTab === "files" && <FileList key={refreshKey} />}
         {activeTab === "albums" && <Albums />}
+        {activeTab === "transfer" && <Transfer />}
         {activeTab === "help" && <Help />}
       </div>
     </div>

@@ -88,10 +88,15 @@ export function FileList() {
   const [copied, setCopied] = useState<string | null>(null);
   const [previewFile, setPreviewFile] = useState<StoredFile | null>(null);
 
-  useEffect(() => {
+ useEffect(() => {
     if (!account) return;
-    const all: StoredFile[] = JSON.parse(localStorage.getItem("blok_files") || "[]");
-    setFiles(all.filter(f => f.wallet === account.address));
+    function loadFiles() {
+      const all: StoredFile[] = JSON.parse(localStorage.getItem("blok_files") || "[]");
+      setFiles(all.filter(f => f.wallet === account!.address));
+    }
+    loadFiles();
+    const interval = setInterval(loadFiles, 2000);
+    return () => clearInterval(interval);
   }, [account]);
 
   if (!account) return null;

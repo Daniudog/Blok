@@ -211,26 +211,25 @@ export function Upload({ onSuccess }: UploadProps) {
         });
         localStorage.setItem("blok_files", JSON.stringify(stored));
 
-       // Anchor on Sui
-        const digest = await anchorBlob(blobId, item.file.name, item.visibility === "public");
-        if (digest) {
-          const updatedFiles = JSON.parse(localStorage.getItem("blok_files") || "[]");
-          const fileIndex = updatedFiles.findIndex((f: { blobId: string }) => f.blobId === blobId);
-          if (fileIndex !== -1) {
-            updatedFiles[fileIndex].suiDigest = digest;
-          } else {
-            updatedFiles.unshift({ blobId, suiDigest: digest });
+       // Anchor on Sui via Tatum RPC
+        try {
+          const digest = await anchorBlob(blobId, item.file.name, item.visibility === "public");
+          if (digest) {
+            const latestFiles = JSON.parse(localStorage.getItem("blok_files") || "[]");
+            const fileIndex = latestFiles.findIndex((f: { blobId: string }) => f.blobId === blobId);
+            if (fileIndex !== -1) {
+              latestFiles[fileIndex].suiDigest = digest;
+              localStorage.setItem("blok_files", JSON.stringify(latestFiles));
+              console.log("Sui digest saved:", digest);
+            }
           }
-          localStorage.setItem("blok_files", JSON.stringify(updatedFiles));
-          console.log("Sui digest saved for blob:", blobId, digest);
-        } else {
-          console.warn("No digest returned for blob:", blobId);
+        } catch (anchorErr) {
+          console.warn("Anchor failed but file was uploaded:", anchorErr);
         }
       } catch (e: unknown) {
         update(item.id, { status: "error", error: e instanceof Error ? e.message : "Failed" });
       }
     }
-
     setUploading(false);
     onSuccess();
   }

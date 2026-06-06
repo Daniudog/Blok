@@ -109,6 +109,10 @@ export function Transfer() {
       localStorage.setItem("blok_transfers", JSON.stringify(transfers));
       setTransferBlobId(newBlobId);
       setSendDone(true);
+      // Track activity
+      const activity = JSON.parse(localStorage.getItem("blok_activity") || "[]");
+      activity.unshift({ action: "transfer", blobId: newBlobId, from: account.address, to: recipientAddress.trim(), timestamp: Date.now() });
+      localStorage.setItem("blok_activity", JSON.stringify(activity.slice(0, 100)));
       setStatus("");
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Transfer failed");
@@ -204,9 +208,11 @@ export function Transfer() {
               <div style={{ fontWeight: "700", fontSize: "18px", marginBottom: "8px" }}>Transfer complete</div>
               <div style={{ fontSize: "13px", color: "#8888aa", marginBottom: "1.5rem", lineHeight: 1.6 }}>Share this blob ID with the recipient. They paste it in the Receive tab to decrypt and save the file.</div>
               <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: "10px", padding: "1rem", marginBottom: "1.5rem", fontFamily: "monospace", fontSize: "13px", color: "#4fffb0", wordBreak: "break-all" }}>{transferBlobId}</div>
-              <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-                <button onClick={() => navigator.clipboard.writeText(transferBlobId)} style={{ padding: "10px 20px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #7c6aff, #6355e0)", color: "white", fontWeight: "600", fontSize: "13px", cursor: "pointer", boxShadow: "0 0 20px rgba(124,106,255,0.3)" }}>Copy Blob ID</button>
-                <button onClick={() => { setSendDone(false); setSelectedFile(null); setRecipientAddress(""); setTransferBlobId(""); }} style={{ padding: "10px 20px", borderRadius: "10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#8888aa", cursor: "pointer", fontSize: "13px" }}>Send another</button>
+              <div style={{ display: "flex", gap: "8px", justifyContent: "center", flexWrap: "wrap" }}>
+                <button onClick={() => navigator.clipboard.writeText(transferBlobId)} style={{ padding: "10px 16px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #7c6aff, #6355e0)", color: "white", fontWeight: "600", fontSize: "13px", cursor: "pointer" }}>Copy Blob ID</button>
+                <button onClick={() => navigator.clipboard.writeText(window.location.origin + "/file/" + transferBlobId)} style={{ padding: "10px 16px", borderRadius: "10px", border: "none", background: "rgba(124,106,255,0.15)", color: "#a78bfa", fontWeight: "600", fontSize: "13px", cursor: "pointer", outline: "1px solid rgba(124,106,255,0.3)" }}>Copy Share Link</button>
+                <button onClick={() => window.open(window.location.origin + "/file/" + transferBlobId, "_blank")} style={{ padding: "10px 16px", borderRadius: "10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#8888aa", cursor: "pointer", fontSize: "13px" }}>Preview</button>
+                <button onClick={() => { setSendDone(false); setSelectedFile(null); setRecipientAddress(""); setTransferBlobId(""); }} style={{ padding: "10px 16px", borderRadius: "10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#8888aa", cursor: "pointer", fontSize: "13px" }}>Send another</button>
               </div>
             </div>
           ) : (

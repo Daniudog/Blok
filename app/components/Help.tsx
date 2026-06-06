@@ -84,7 +84,28 @@ export function Help() {
           ))}
         </div>
       </div>
-
+      {/* Coming soon */}
+      <div style={{ background: "rgba(79,255,176,0.04)", border: "1px solid rgba(79,255,176,0.15)", borderRadius: "16px", padding: "1.5rem", marginBottom: "2rem" }}>
+        <div style={{ fontSize: "14px", fontWeight: "700", marginBottom: "1rem", color: "#4fffb0" }}>What to expect from Blok</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {[
+            { icon: "🔐", title: "ZK Login", desc: "Sign into Blok with your Google, Apple, or Facebook account. Zero-knowledge proofs verify your identity on Sui without exposing it. No seed phrase. No wallet setup. Just your existing account — and your files are permanently yours on Walrus." },
+            { icon: "🛡️", title: "Seal Encryption", desc: "Blok will upgrade locked file encryption to Seal — Mysten Labs threshold encryption protocol. This enables sharing locked files with multiple wallets simultaneously, time-based access policies, and access revocation — all without re-encrypting the file." },
+            { icon: "🔌", title: "Third-Party App Integration", desc: "Save directly to Blok from any app. Working inside a video editor, design tool, PDF editor, or coding environment — you will be able to save directly to Blok without switching apps. Implemented via a browser extension that intercepts save dialogs and routes files to your Blok vault." },
+            { icon: "🔍", title: "OCR and Content Search", desc: "Search inside your files. Blok will use optical character recognition to extract text from images, scanned documents, and PDFs. Search for any word and Blok finds the file containing it — even if the word is inside a photo of a handwritten note." },
+            { icon: "🔄", title: "File Conversion", desc: "Convert files directly in Blok. PDF to Word, JPEG to PNG, MP4 to MP3, and dozens more conversions — without leaving the platform. Converted files are automatically stored back to your Blok vault on Walrus." },
+            { icon: "📱", title: "Mobile App", desc: "A native iOS and Android app for Blok — with camera integration, background uploads, push notifications for file activity, and offline access to your recently viewed files." },
+          ].map(item => (
+            <div key={item.title} style={{ display: "flex", gap: "12px", padding: "12px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px" }}>
+              <span style={{ fontSize: "20px", flexShrink: 0 }}>{item.icon}</span>
+              <div>
+                <div style={{ fontSize: "13px", fontWeight: "600", marginBottom: "4px", color: "#f0f0ff" }}>{item.title}</div>
+                <div style={{ fontSize: "12px", color: "#8888aa", lineHeight: 1.6 }}>{item.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
       {/* Contact */}
       <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
         <div>

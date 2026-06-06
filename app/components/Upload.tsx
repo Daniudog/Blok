@@ -210,6 +210,10 @@ export function Upload({ onSuccess }: UploadProps) {
           visibility: item.visibility,
         });
         localStorage.setItem("blok_files", JSON.stringify(stored));
+        // Track upload activity
+        const actLog = JSON.parse(localStorage.getItem("blok_activity") || "[]");
+        actLog.unshift({ action: "upload", blobId, fileName: item.file.name, timestamp: Date.now(), wallet: account.address });
+        localStorage.setItem("blok_activity", JSON.stringify(actLog.slice(0, 100)));
 
        // Anchor on Sui via Tatum RPC
         try {
@@ -231,7 +235,8 @@ export function Upload({ onSuccess }: UploadProps) {
       }
     }
     setUploading(false);
-    onSuccess();
+    // Force refresh after all uploads complete
+    setTimeout(() => onSuccess(), 500);
   }
 
   const hasWaiting = items.some(i => i.status === "waiting");

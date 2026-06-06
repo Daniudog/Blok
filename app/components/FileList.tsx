@@ -95,7 +95,7 @@ export function FileList() {
       setFiles(all.filter(f => f.wallet === account!.address));
     }
     loadFiles();
-    const interval = setInterval(loadFiles, 2000);
+    const interval = setInterval(loadFiles, 1000);
     return () => clearInterval(interval);
   }, [account]);
 
@@ -147,6 +147,10 @@ export function FileList() {
       const a = document.createElement("a");
       a.href = url; a.download = file.name; a.click();
       URL.revokeObjectURL(url);
+      // Track download
+      const actLog = JSON.parse(localStorage.getItem("blok_activity") || "[]");
+      actLog.unshift({ action: "download", blobId: file.blobId, fileName: file.name, timestamp: Date.now() });
+      localStorage.setItem("blok_activity", JSON.stringify(actLog.slice(0, 100)));
     } catch (e) {
       alert("Download failed: " + (e instanceof Error ? e.message : "Unknown"));
     }
@@ -439,7 +443,12 @@ export function FileList() {
 
               {/* Actions */}
               <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
-                <button title="Preview" onClick={() => setPreviewFile(file)}
+                <button title="Preview" onClick={() => {
+                setPreviewFile(file);
+                const actLog = JSON.parse(localStorage.getItem("blok_activity") || "[]");
+                actLog.unshift({ action: "view", blobId: file.blobId, fileName: file.name, timestamp: Date.now() });
+                localStorage.setItem("blok_activity", JSON.stringify(actLog.slice(0, 100)));
+              }}
                   style={{
                     transition: "all 0.15s", background: "rgba(255,255,255,0.04)",
                     border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px",
@@ -475,6 +484,21 @@ export function FileList() {
                   {downloading === file.blobId
                     ? <span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>⟳</span>
                     : "⬇"}
+                </button>
+                <button
+                  title="Copy share link"
+                  onClick={() => {
+                    const link = window.location.origin + "/file/" + file.blobId;
+                    navigator.clipboard.writeText(link);
+                  }}
+                  style={{
+                    transition: "all 0.15s", background: "rgba(124,106,255,0.08)",
+                    border: "1px solid rgba(124,106,255,0.2)", borderRadius: "8px",
+                    padding: "7px 10px", color: "#a78bfa", cursor: "pointer", fontSize: "12px",
+                    fontWeight: "600",
+                  }}
+                >
+                  🔗
                 </button>
                 <button title="View on Walrus"
                   onClick={() => window.open("https://aggregator.walrus-testnet.walrus.space/v1/blobs/" + file.blobId, "_blank")}

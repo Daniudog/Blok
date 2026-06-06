@@ -436,3 +436,11 @@ button[data-dapp-kit="connect-button"] {
   box-shadow: 0 0 20px rgba(124,106,255,0.3) !important;
   transition: all 0.2s !important;
 }
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  header { padding: 0 1rem !important; height: auto !important; min-height: 60px !important; flex-wrap: wrap; }
+  div[style*="maxWidth: 900px"], div[style*="maxWidth: 960px"], div[style*="maxWidth: 760px"] { padding: 1rem !important; }
+  div[style*="overflow-x: auto"] { overflow-x: auto !important; }
+  button[style*="padding: 7px 14px"] { padding: 6px 8px !important; font-size: 11px !important; }
+}

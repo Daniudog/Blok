@@ -201,7 +201,7 @@ function PublicPage() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem", flexWrap: "wrap", gap: "10px" }}>
             <div>
               <h2 style={{ fontSize: "18px", fontWeight: "700", letterSpacing: "-0.3px", marginBottom: "3px" }}>Explore Public Files</h2>
-              <p style={{ fontSize: "13px", color: "#8888aa" }}>Recently stored public files — viewable by anyone</p>
+              <p style={{ fontSize: "13px", color: "#8888aa" }}>Recently stored public files — viewable by anyone · <span style={{ color: "#ffb84f" }}>Search by blob ID to find files from other devices</span></p>
             </div>
             <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
               {["all", "image", "video", "audio", "document"].map(t => (

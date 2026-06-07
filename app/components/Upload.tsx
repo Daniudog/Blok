@@ -235,8 +235,7 @@ export function Upload({ onSuccess }: UploadProps) {
       }
     }
     setUploading(false);
-    // Force refresh after all uploads complete
-    setTimeout(() => onSuccess(), 500);
+    setTimeout(() => onSuccess(), 1500);
   }
 
   const hasWaiting = items.some(i => i.status === "waiting");

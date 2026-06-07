@@ -66,6 +66,19 @@ export default function Home() {
   return (
     <div style={{ minHeight: "100vh", background: "#08080f", color: "#f0f0ff", fontFamily: "-apple-system, BlinkMacSystemFont, Inter, sans-serif", overflowX: "hidden" }}>
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, background: "radial-gradient(ellipse 80% 50% at 20% -10%, rgba(99,76,255,0.1) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 110%, rgba(99,76,255,0.07) 0%, transparent 60%)" }} />
+      {/* Testnet notice */}
+      <div style={{
+        background: "rgba(255,184,79,0.08)",
+        border: "1px solid rgba(255,184,79,0.2)",
+        padding: "8px 2rem",
+        textAlign: "center",
+        fontSize: "12px",
+        color: "#ffb84f",
+        position: "relative",
+        zIndex: 50,
+      }}>
+        ⚠️ Running on Sui Testnet — Files stored on Walrus testnet expire after each epoch. Upload fresh files for testing. Mainnet launch coming soon.
+      </div>
       <header style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(8,8,15,0.9)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "0 2rem", height: "60px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <div style={{ width: "30px", height: "30px", background: "linear-gradient(135deg, #7c6aff, #a78bfa)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 20px rgba(124,106,255,0.4)", flexShrink: 0 }}>
@@ -169,7 +182,7 @@ function PublicPage() {
       <div style={{ maxWidth: "760px", margin: "0 auto", padding: "5rem 2rem 3rem", textAlign: "center" }}>
         <div className="fade-up" style={{ marginBottom: "1.5rem" }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(124,106,255,0.1)", border: "1px solid rgba(124,106,255,0.2)", borderRadius: "100px", padding: "5px 14px", fontSize: "12px", color: "#a78bfa", fontWeight: "500" }}>
-            Built on Sui · Powered by Walrus · Tatum RPC
+            Built on Sui · Powered by Walrus · Tatum RPC · Testnet
           </span>
         </div>
         <h1 className="fade-up d1" style={{ fontSize: "clamp(38px, 7vw, 66px)", fontWeight: "800", lineHeight: 1.05, letterSpacing: "-2px", marginBottom: "1.25rem" }}>

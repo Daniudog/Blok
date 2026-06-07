@@ -442,7 +442,7 @@ export function FileList() {
               </div>
 
               {/* Actions */}
-              <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+              <div style={{ display: "flex", gap: "4px", flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end", maxWidth: "160px" }}>
                 <button title="Preview" onClick={() => {
                 setPreviewFile(file);
                 const actLog = JSON.parse(localStorage.getItem("blok_activity") || "[]");
@@ -452,7 +452,7 @@ export function FileList() {
                   style={{
                     transition: "all 0.15s", background: "rgba(255,255,255,0.04)",
                     border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px",
-                    padding: "7px 10px", color: "#8888aa", cursor: "pointer", fontSize: "14px",
+                    padding: "6px 8px", color: "#8888aa", cursor: "pointer", fontSize: "14px",
                   }}>
                   👁️
                 </button>
@@ -461,7 +461,7 @@ export function FileList() {
                     transition: "all 0.15s",
                     background: copied === file.blobId ? "rgba(79,255,176,0.1)" : "rgba(255,255,255,0.04)",
                     border: `1px solid ${copied === file.blobId ? "rgba(79,255,176,0.3)" : "rgba(255,255,255,0.08)"}`,
-                    borderRadius: "8px", padding: "7px 10px",
+                    borderRadius: "8px", padding: "6px 8px",
                     color: copied === file.blobId ? "#4fffb0" : "#8888aa",
                     cursor: "pointer", fontSize: "14px",
                   }}>
@@ -471,14 +471,14 @@ export function FileList() {
                   style={{
                     transition: "all 0.15s", background: "rgba(255,255,255,0.04)",
                     border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px",
-                    padding: "7px 10px", color: "#8888aa", cursor: "pointer", fontSize: "14px",
+                    padding: "6px 8px", color: "#8888aa", cursor: "pointer", fontSize: "14px",
                   }}>↗</button>
                 <button title="Download" onClick={() => download(file)}
                   disabled={downloading === file.blobId}
                   style={{
                     transition: "all 0.15s", background: "rgba(255,255,255,0.04)",
                     border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px",
-                    padding: "7px 10px", color: "#8888aa", cursor: "pointer", fontSize: "14px",
+                    padding: "6px 8px", color: "#8888aa", cursor: "pointer", fontSize: "14px",
                     opacity: downloading === file.blobId ? 0.5 : 1,
                   }}>
                   {downloading === file.blobId
@@ -494,7 +494,7 @@ export function FileList() {
                   style={{
                     transition: "all 0.15s", background: "rgba(124,106,255,0.08)",
                     border: "1px solid rgba(124,106,255,0.2)", borderRadius: "8px",
-                    padding: "7px 10px", color: "#a78bfa", cursor: "pointer", fontSize: "12px",
+                    padding: "6px 8px", color: "#a78bfa", cursor: "pointer", fontSize: "12px",
                     fontWeight: "600",
                   }}
                 >
@@ -505,7 +505,7 @@ export function FileList() {
                   style={{
                   transition: "all 0.15s", background: "rgba(124,106,255,0.08)",
                   border: "1px solid rgba(124,106,255,0.2)", borderRadius: "8px",
-                  padding: "7px 10px", color: "#a78bfa", cursor: "pointer", fontSize: "14px",
+                  padding: "6px 8px", color: "#a78bfa", cursor: "pointer", fontSize: "14px",
                 }}>🌊</button>
               </div>
             </div>

@@ -444,3 +444,12 @@ button[data-dapp-kit="connect-button"] {
   div[style*="overflow-x: auto"] { overflow-x: auto !important; }
   button[style*="padding: 7px 14px"] { padding: 6px 8px !important; font-size: 11px !important; }
 }
+
+@media (max-width: 640px) {
+  div[style*="maxWidth: 960px"] { padding: 1rem !important; }
+  div[style*="maxWidth: 760px"] { padding: 1rem !important; }
+  div[style*="maxWidth: 900px"] { padding: 1rem !important; }
+  h1 { font-size: clamp(32px, 8vw, 66px) !important; }
+  div[style*="gap: 4px"][style*="overflowX"] { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .file-row { flex-wrap: wrap; }
+}

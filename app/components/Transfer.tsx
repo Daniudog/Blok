@@ -83,36 +83,31 @@ export function Transfer() {
       const senderKey = await deriveKey(senderSig);
       setStatus("Fetching file from Walrus...");
       const res = await fetch("/api/upload?blobId=" + selectedFile.blobId);
-      if (!res.ok) throw new Error("Failed to fetch file from Walrus");
+      if (!res.ok) throw new Error("Failed to fetch file from Walrus. The file may have expired on testnet.");
       let fileBuffer = await res.arrayBuffer();
       if (selectedFile.isLocked || selectedFile.visibility === "locked" || selectedFile.isEncrypted) {
         setStatus("Decrypting file...");
         const iv = fileBuffer.slice(0, 12);
         const data = fileBuffer.slice(12);
-        fileBuffer = await crypto.subtle.decrypt(
-          { name: "AES-GCM", iv: new Uint8Array(iv) },
-          senderKey,
-          data
-        );
+        fileBuffer = await crypto.subtle.decrypt({ name: "AES-GCM", iv: new Uint8Array(iv) }, senderKey, data);
       }
-      setStatus("Encrypting for recipient...");
+      setStatus("Encrypting for recipient wallet...");
       const recipientKey = await deriveKey("Blok transfer key — " + recipientAddress.trim());
       const iv = crypto.getRandomValues(new Uint8Array(12));
       const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, recipientKey, fileBuffer);
       const out = new Uint8Array(12 + encrypted.byteLength);
       out.set(iv, 0);
       out.set(new Uint8Array(encrypted), 12);
-      setStatus("Uploading to Walrus...");
+      setStatus("Uploading encrypted file to Walrus...");
       const newBlobId = await uploadToWalrus(out.buffer);
       const transfers = JSON.parse(localStorage.getItem("blok_transfers") || "[]");
       transfers.unshift({ blobId: newBlobId, name: selectedFile.name, from: account.address, to: recipientAddress.trim(), sentAt: Date.now() });
       localStorage.setItem("blok_transfers", JSON.stringify(transfers));
-      setTransferBlobId(newBlobId);
-      setSendDone(true);
-      // Track activity
       const activity = JSON.parse(localStorage.getItem("blok_activity") || "[]");
       activity.unshift({ action: "transfer", blobId: newBlobId, from: account.address, to: recipientAddress.trim(), timestamp: Date.now() });
       localStorage.setItem("blok_activity", JSON.stringify(activity.slice(0, 100)));
+      setTransferBlobId(newBlobId);
+      setSendDone(true);
       setStatus("");
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Transfer failed");
@@ -128,17 +123,13 @@ export function Transfer() {
     try {
       setStatus("Fetching from Walrus...");
       const res = await fetch("/api/upload?blobId=" + receiveBlobId.trim());
-      if (!res.ok) throw new Error("Failed to fetch from Walrus");
+      if (!res.ok) throw new Error("Failed to fetch from Walrus. Check the blob ID.");
       const encryptedBuffer = await res.arrayBuffer();
       setStatus("Decrypting with your wallet address...");
       const recipientKey = await deriveKey("Blok transfer key — " + account.address);
       const iv = encryptedBuffer.slice(0, 12);
       const data = encryptedBuffer.slice(12);
-      const decrypted = await crypto.subtle.decrypt(
-        { name: "AES-GCM", iv: new Uint8Array(iv) },
-        recipientKey,
-        data
-      );
+      const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: new Uint8Array(iv) }, recipientKey, data);
       setStatus("Saving to your library...");
       const stored = JSON.parse(localStorage.getItem("blok_files") || "[]");
       stored.unshift({
@@ -155,32 +146,27 @@ export function Transfer() {
         visibility: "private",
       });
       localStorage.setItem("blok_files", JSON.stringify(stored));
+      const activity = JSON.parse(localStorage.getItem("blok_activity") || "[]");
+      activity.unshift({ action: "receive", blobId: receiveBlobId.trim(), timestamp: Date.now() });
+      localStorage.setItem("blok_activity", JSON.stringify(activity.slice(0, 100)));
       setReceiveDone(true);
       setStatus("");
       setReceiveBlobId("");
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed to receive. Make sure the blob ID is correct and was sent to your wallet.");
+      setError(e instanceof Error ? e.message : "Failed to receive. Make sure the blob ID is correct and was sent to your wallet address.");
       setStatus("");
     }
     setLoading(false);
   }
 
   const inp: React.CSSProperties = {
-    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: "10px", color: "#f0f0ff", padding: "10px 14px", fontSize: "14px",
-    outline: "none", fontFamily: "inherit", width: "100%", transition: "all 0.2s",
+    background: "rgba(255,255,255,0.05)",
+    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: "10px", color: "#f0f0ff",
+    padding: "10px 14px", fontSize: "14px",
+    outline: "none", fontFamily: "inherit",
+    width: "100%", transition: "all 0.2s",
   };
-
-  const btn = (active: boolean): React.CSSProperties => ({
-    width: "100%", padding: "12px", borderRadius: "10px", border: "none",
-    cursor: active ? "pointer" : "not-allowed",
-    fontSize: "14px", fontWeight: "600",
-    background: active ? "linear-gradient(135deg, #7c6aff, #6355e0)" : "rgba(124,106,255,0.3)",
-    color: "white",
-    boxShadow: active ? "0 0 24px rgba(124,106,255,0.4)" : "none",
-    transition: "all 0.2s",
-    display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
-  });
 
   return (
     <div style={{ animation: "fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) forwards" }}>
@@ -196,7 +182,10 @@ export function Transfer() {
 
       <div style={{ display: "flex", gap: "4px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px", padding: "3px", width: "fit-content", marginBottom: "1.5rem" }}>
         {[{ id: "send", label: "📤 Send" }, { id: "receive", label: "📥 Receive" }].map(t => (
-          <button key={t.id} onClick={() => { setActiveTab(t.id as "send" | "receive"); setError(""); setSendDone(false); setReceiveDone(false); }} style={{ padding: "7px 18px", borderRadius: "8px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: "500", background: activeTab === t.id ? "linear-gradient(135deg, #7c6aff, #6355e0)" : "transparent", color: activeTab === t.id ? "white" : "#8888aa", boxShadow: activeTab === t.id ? "0 0 16px rgba(124,106,255,0.3)" : "none", transition: "all 0.2s" }}>{t.label}</button>
+          <button key={t.id} onClick={() => { setActiveTab(t.id as "send" | "receive"); setError(""); setSendDone(false); setReceiveDone(false); }}
+            style={{ padding: "7px 18px", borderRadius: "8px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: "500", background: activeTab === t.id ? "linear-gradient(135deg, #7c6aff, #6355e0)" : "transparent", color: activeTab === t.id ? "white" : "#8888aa", boxShadow: activeTab === t.id ? "0 0 16px rgba(124,106,255,0.3)" : "none", transition: "all 0.2s" }}>
+            {t.label}
+          </button>
         ))}
       </div>
 
@@ -206,13 +195,29 @@ export function Transfer() {
             <div style={{ background: "rgba(79,255,176,0.06)", border: "1px solid rgba(79,255,176,0.2)", borderRadius: "16px", padding: "2rem", textAlign: "center" }}>
               <div style={{ fontSize: "48px", marginBottom: "1rem" }}>✅</div>
               <div style={{ fontWeight: "700", fontSize: "18px", marginBottom: "8px" }}>Transfer complete</div>
-              <div style={{ fontSize: "13px", color: "#8888aa", marginBottom: "1.5rem", lineHeight: 1.6 }}>Share this blob ID with the recipient. They paste it in the Receive tab to decrypt and save the file.</div>
-              <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: "10px", padding: "1rem", marginBottom: "1.5rem", fontFamily: "monospace", fontSize: "13px", color: "#4fffb0", wordBreak: "break-all" }}>{transferBlobId}</div>
+              <div style={{ fontSize: "13px", color: "#8888aa", marginBottom: "1.5rem", lineHeight: 1.6 }}>
+                Share this blob ID or link with the recipient. They paste it in the Receive tab.
+              </div>
+              <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: "10px", padding: "1rem", marginBottom: "1.5rem", fontFamily: "monospace", fontSize: "12px", color: "#4fffb0", wordBreak: "break-all" }}>
+                {transferBlobId}
+              </div>
               <div style={{ display: "flex", gap: "8px", justifyContent: "center", flexWrap: "wrap" }}>
-                <button onClick={() => navigator.clipboard.writeText(transferBlobId)} style={{ padding: "10px 16px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #7c6aff, #6355e0)", color: "white", fontWeight: "600", fontSize: "13px", cursor: "pointer" }}>Copy Blob ID</button>
-                <button onClick={() => navigator.clipboard.writeText(window.location.origin + "/file/" + transferBlobId)} style={{ padding: "10px 16px", borderRadius: "10px", border: "none", background: "rgba(124,106,255,0.15)", color: "#a78bfa", fontWeight: "600", fontSize: "13px", cursor: "pointer", outline: "1px solid rgba(124,106,255,0.3)" }}>Copy Share Link</button>
-                <button onClick={() => window.open(window.location.origin + "/file/" + transferBlobId, "_blank")} style={{ padding: "10px 16px", borderRadius: "10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#8888aa", cursor: "pointer", fontSize: "13px" }}>Preview</button>
-                <button onClick={() => { setSendDone(false); setSelectedFile(null); setRecipientAddress(""); setTransferBlobId(""); }} style={{ padding: "10px 16px", borderRadius: "10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#8888aa", cursor: "pointer", fontSize: "13px" }}>Send another</button>
+                <button onClick={() => navigator.clipboard.writeText(transferBlobId)}
+                  style={{ padding: "10px 16px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #7c6aff, #6355e0)", color: "white", fontWeight: "600", fontSize: "13px", cursor: "pointer" }}>
+                  Copy Blob ID
+                </button>
+                <button onClick={() => navigator.clipboard.writeText(window.location.origin + "/file/" + transferBlobId)}
+                  style={{ padding: "10px 16px", borderRadius: "10px", border: "none", background: "rgba(124,106,255,0.15)", color: "#a78bfa", fontWeight: "600", fontSize: "13px", cursor: "pointer", outline: "1px solid rgba(124,106,255,0.3)" }}>
+                  Copy Share Link
+                </button>
+                <button onClick={() => window.open(window.location.origin + "/file/" + transferBlobId, "_blank")}
+                  style={{ padding: "10px 16px", borderRadius: "10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#8888aa", cursor: "pointer", fontSize: "13px" }}>
+                  Preview
+                </button>
+                <button onClick={() => { setSendDone(false); setSelectedFile(null); setRecipientAddress(""); setTransferBlobId(""); }}
+                  style={{ padding: "10px 16px", borderRadius: "10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#8888aa", cursor: "pointer", fontSize: "13px" }}>
+                  Send another
+                </button>
               </div>
             </div>
           ) : (
@@ -220,12 +225,17 @@ export function Transfer() {
               <div style={{ marginBottom: "1.25rem" }}>
                 <div style={{ fontSize: "13px", fontWeight: "600", color: "#f0f0ff", marginBottom: "8px" }}>Step 1 — Select a file</div>
                 {myFiles.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "2rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "12px", color: "#8888aa", fontSize: "13px" }}>No files yet. Upload a file first.</div>
+                  <div style={{ textAlign: "center", padding: "2rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "12px", color: "#8888aa", fontSize: "13px" }}>
+                    No files yet. Upload a file first.
+                  </div>
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px", maxHeight: "280px", overflowY: "auto" }}>
                     {myFiles.map(file => (
-                      <div key={file.blobId} onClick={() => setSelectedFile(file)} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", borderRadius: "10px", cursor: "pointer", background: selectedFile?.blobId === file.blobId ? "rgba(124,106,255,0.12)" : "rgba(255,255,255,0.03)", border: `1px solid ${selectedFile?.blobId === file.blobId ? "rgba(124,106,255,0.4)" : "rgba(255,255,255,0.07)"}`, transition: "all 0.15s" }}>
-                        <div style={{ width: "20px", height: "20px", borderRadius: "50%", flexShrink: 0, border: `2px solid ${selectedFile?.blobId === file.blobId ? "#7c6aff" : "rgba(255,255,255,0.2)"}`, background: selectedFile?.blobId === file.blobId ? "#7c6aff" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: "white" }}>{selectedFile?.blobId === file.blobId ? "✓" : ""}</div>
+                      <div key={file.blobId} onClick={() => setSelectedFile(file)}
+                        style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", borderRadius: "10px", cursor: "pointer", background: selectedFile?.blobId === file.blobId ? "rgba(124,106,255,0.12)" : "rgba(255,255,255,0.03)", border: selectedFile?.blobId === file.blobId ? "1px solid rgba(124,106,255,0.4)" : "1px solid rgba(255,255,255,0.07)", transition: "all 0.15s" }}>
+                        <div style={{ width: "20px", height: "20px", borderRadius: "50%", flexShrink: 0, border: selectedFile?.blobId === file.blobId ? "2px solid #7c6aff" : "2px solid rgba(255,255,255,0.2)", background: selectedFile?.blobId === file.blobId ? "#7c6aff" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: "white" }}>
+                          {selectedFile?.blobId === file.blobId ? "✓" : ""}
+                        </div>
                         <span style={{ fontSize: "20px" }}>{fileIcon(file.type)}</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: "13px", fontWeight: "500", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{file.name}</div>
@@ -236,13 +246,26 @@ export function Transfer() {
                   </div>
                 )}
               </div>
+
               <div style={{ marginBottom: "1.25rem" }}>
                 <div style={{ fontSize: "13px", fontWeight: "600", color: "#f0f0ff", marginBottom: "8px" }}>Step 2 — Recipient wallet address</div>
                 <input style={inp} placeholder="0x... recipient Sui wallet address" value={recipientAddress} onChange={e => setRecipientAddress(e.target.value)} />
               </div>
-              {status && <div style={{ background: "rgba(124,106,255,0.08)", border: "1px solid rgba(124,106,255,0.2)", borderRadius: "10px", padding: "12px 16px", marginBottom: "1rem", fontSize: "13px", color: "#a78bfa", display: "flex", alignItems: "center", gap: "8px" }}><span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>⟳</span>{status}</div>}
-              {error && <div style={{ background: "rgba(255,79,106,0.08)", border: "1px solid rgba(255,79,106,0.2)", borderRadius: "10px", padding: "12px 16px", marginBottom: "1rem", fontSize: "13px", color: "#ff4f6a" }}>⚠️ {error}</div>}
-              <button onClick={handleSend} disabled={!selectedFile || !recipientAddress.trim() || loading} style={btn(!!(selectedFile && recipientAddress.trim()) && !loading)}>
+
+              {status && (
+                <div style={{ background: "rgba(124,106,255,0.08)", border: "1px solid rgba(124,106,255,0.2)", borderRadius: "10px", padding: "12px 16px", marginBottom: "1rem", fontSize: "13px", color: "#a78bfa", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>⟳</span>{status}
+                </div>
+              )}
+
+              {error && (
+                <div style={{ background: "rgba(255,79,106,0.08)", border: "1px solid rgba(255,79,106,0.2)", borderRadius: "10px", padding: "12px 16px", marginBottom: "1rem", fontSize: "13px", color: "#ff4f6a" }}>
+                  ⚠️ {error}
+                </div>
+              )}
+
+              <button onClick={handleSend} disabled={!selectedFile || !recipientAddress.trim() || loading}
+                style={{ width: "100%", padding: "12px", borderRadius: "10px", border: "none", cursor: !selectedFile || !recipientAddress.trim() || loading ? "not-allowed" : "pointer", fontSize: "14px", fontWeight: "600", background: selectedFile && recipientAddress.trim() && !loading ? "linear-gradient(135deg, #7c6aff, #6355e0)" : "rgba(124,106,255,0.3)", color: "white", boxShadow: selectedFile && recipientAddress.trim() && !loading ? "0 0 24px rgba(124,106,255,0.4)" : "none", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
                 {loading ? <><span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>⟳</span>{status || "Processing..."}</> : "🔐 Encrypt & Send"}
               </button>
             </div>
@@ -257,18 +280,33 @@ export function Transfer() {
               <div style={{ fontSize: "48px", marginBottom: "1rem" }}>📥</div>
               <div style={{ fontWeight: "700", fontSize: "18px", marginBottom: "8px" }}>File received</div>
               <div style={{ fontSize: "13px", color: "#8888aa", marginBottom: "1.5rem" }}>Decrypted and saved to your library. Check My Files.</div>
-              <button onClick={() => { setReceiveDone(false); setError(""); }} style={{ padding: "10px 24px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #7c6aff, #6355e0)", color: "white", fontWeight: "600", fontSize: "14px", cursor: "pointer", boxShadow: "0 0 20px rgba(124,106,255,0.3)" }}>Receive another</button>
+              <button onClick={() => { setReceiveDone(false); setError(""); }}
+                style={{ padding: "10px 24px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #7c6aff, #6355e0)", color: "white", fontWeight: "600", fontSize: "14px", cursor: "pointer", boxShadow: "0 0 20px rgba(124,106,255,0.3)" }}>
+                Receive another
+              </button>
             </div>
           ) : (
             <div>
               <div style={{ marginBottom: "1.25rem" }}>
                 <div style={{ fontSize: "13px", fontWeight: "600", color: "#f0f0ff", marginBottom: "8px" }}>Paste the blob ID shared with you</div>
                 <input style={{ ...inp, marginBottom: "8px" }} placeholder="Walrus blob ID from sender..." value={receiveBlobId} onChange={e => setReceiveBlobId(e.target.value)} />
-                <div style={{ fontSize: "12px", color: "#55556a", lineHeight: 1.5 }}>The sender will give you a blob ID after transferring. Paste it above — the file will be decrypted using your wallet address and saved to your library.</div>
+                <div style={{ fontSize: "12px", color: "#55556a", lineHeight: 1.5 }}>The sender shares a blob ID after transferring. Paste it above — Blok decrypts it using your wallet address and saves it to your library.</div>
               </div>
-              {status && <div style={{ background: "rgba(124,106,255,0.08)", border: "1px solid rgba(124,106,255,0.2)", borderRadius: "10px", padding: "12px 16px", marginBottom: "1rem", fontSize: "13px", color: "#a78bfa", display: "flex", alignItems: "center", gap: "8px" }}><span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>⟳</span>{status}</div>}
-              {error && <div style={{ background: "rgba(255,79,106,0.08)", border: "1px solid rgba(255,79,106,0.2)", borderRadius: "10px", padding: "12px 16px", marginBottom: "1rem", fontSize: "13px", color: "#ff4f6a" }}>⚠️ {error}</div>}
-              <button onClick={handleReceive} disabled={!receiveBlobId.trim() || loading} style={btn(!!receiveBlobId.trim() && !loading)}>
+
+              {status && (
+                <div style={{ background: "rgba(124,106,255,0.08)", border: "1px solid rgba(124,106,255,0.2)", borderRadius: "10px", padding: "12px 16px", marginBottom: "1rem", fontSize: "13px", color: "#a78bfa", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>⟳</span>{status}
+                </div>
+              )}
+
+              {error && (
+                <div style={{ background: "rgba(255,79,106,0.08)", border: "1px solid rgba(255,79,106,0.2)", borderRadius: "10px", padding: "12px 16px", marginBottom: "1rem", fontSize: "13px", color: "#ff4f6a" }}>
+                  ⚠️ {error}
+                </div>
+              )}
+
+              <button onClick={handleReceive} disabled={!receiveBlobId.trim() || loading}
+                style={{ width: "100%", padding: "12px", borderRadius: "10px", border: "none", cursor: receiveBlobId.trim() && !loading ? "pointer" : "not-allowed", fontSize: "14px", fontWeight: "600", background: receiveBlobId.trim() && !loading ? "linear-gradient(135deg, #7c6aff, #6355e0)" : "rgba(124,106,255,0.3)", color: "white", boxShadow: receiveBlobId.trim() && !loading ? "0 0 24px rgba(124,106,255,0.4)" : "none", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
                 {loading ? <><span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>⟳</span>{status || "Processing..."}</> : "📥 Decrypt & Receive"}
               </button>
             </div>

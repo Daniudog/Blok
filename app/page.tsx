@@ -120,16 +120,38 @@ function PublicPage() {
     setPublicFiles(all.filter(f => f.isPublic).sort((a, b) => b.storedAt - a.storedAt));
   }, []);
 
-  function handleSearch() {
+  async function handleSearch() {
     if (!search.trim()) return;
     const all: PublicFile[] = JSON.parse(localStorage.getItem("blok_files") || "[]");
-    const q = search.toLowerCase();
-    const results = all.filter(f => f.isPublic && (
+    const q = search.toLowerCase().trim();
+    let results = all.filter(f => f.isPublic && (
       f.name.toLowerCase().includes(q) ||
       f.blobId.toLowerCase().includes(q) ||
       f.type.toLowerCase().includes(q) ||
       f.wallet.toLowerCase().includes(q)
     ));
+
+    // If search looks like a blob ID and not found locally, try fetching from Walrus directly
+    if (results.length === 0 && q.length > 20) {
+      try {
+        const res = await fetch("/api/upload?blobId=" + q);
+        if (res.ok) {
+          const buf = await res.arrayBuffer();
+          const syntheticFile: PublicFile = {
+            blobId: q,
+            name: "File — " + q.slice(0, 8) + "...",
+            size: buf.byteLength,
+            type: "application/octet-stream",
+            storedAt: Date.now(),
+            wallet: "unknown",
+            isPublic: true,
+            isEncrypted: false,
+          };
+          results = [syntheticFile];
+        }
+      } catch { /* not found */ }
+    }
+
     setSearchResults(results);
     setSearched(true);
   }
